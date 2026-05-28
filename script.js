@@ -10,6 +10,28 @@ let skills = [];
 let certifications = [];
 let coverLetter = { company: '', role: '', intro: '', body: '', closing: '' };
 let projects = [];
+let currentZoom = 0.75;
+
+function getResponsiveZoom(width) {
+    if (width < 640) return 0.58;
+    if (width < 900) return 0.66;
+    if (width < 1200) return 0.72;
+    return 0.75;
+}
+
+function applyResponsiveZoom() {
+    const previewContainer = document.getElementById('previewContainer');
+    const zoomSlider = document.getElementById('zoomSlider');
+    const zoomValue = document.getElementById('zoomValue');
+    if (!previewContainer) return;
+
+    currentZoom = getResponsiveZoom(window.innerWidth);
+    previewContainer.style.transform = `scale(${currentZoom})`;
+    previewContainer.style.transformOrigin = 'top center';
+
+    if (zoomSlider) zoomSlider.value = currentZoom;
+    if (zoomValue) zoomValue.textContent = `${Math.round(currentZoom * 100)}%`;
+}
 
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -23,7 +45,9 @@ document.addEventListener('DOMContentLoaded', () => {
     setPortfolioTemplate(currentPortfolioTemplate);
     setMode('resume');
     initAdBanner();
+    applyResponsiveZoom();
     updatePreview();
+    window.addEventListener('resize', applyResponsiveZoom);
 });
 
 const adBanners = [
@@ -67,8 +91,9 @@ function setTheme(theme) {
 }
 
 function updateZoom(value) {
-    document.getElementById('previewContainer').style.transform = `scale(${value})`;
-    document.getElementById('zoomValue').textContent = Math.round(value * 100) + '%';
+    currentZoom = Number(value);
+    document.getElementById('previewContainer').style.transform = `scale(${currentZoom})`;
+    document.getElementById('zoomValue').textContent = Math.round(currentZoom * 100) + '%';
 }
 
 function showAIThinking() {

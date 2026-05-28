@@ -14,7 +14,7 @@
 
     <!-- Header -->
     <header class="fixed top-0 left-0 right-0 z-50 glass-panel border-b border-slate-200/80">
-        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 min-h-16 py-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 bg-gradient-to-br from-violet-600 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg shadow-violet-500/25">
                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -26,7 +26,7 @@
                     <p class="text-[11px] text-slate-500 font-medium tracking-wide uppercase">Resume Studio by Nyxon</p>
                 </div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
                 <button onclick="loadDemoData()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:text-violet-600 transition-colors rounded-lg hover:bg-slate-100">
                     Load Demo
                 </button>
@@ -44,10 +44,10 @@
     </header>
 
     <div class="pt-20 pb-8 max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 h-[calc(100vh-6rem)]">
+        <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 xl:h-[calc(100vh-6rem)]">
             
             <!-- Left Panel: Input Form -->
-            <div class="xl:col-span-5 overflow-y-auto pr-1 space-y-5 pb-20 custom-scroll">
+            <div class="xl:col-span-5 xl:overflow-y-auto xl:pr-1 space-y-5 pb-6 xl:pb-20 custom-scroll">
                 
                 <!-- Output Type -->
                 <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
@@ -417,13 +417,13 @@
                     </div>
                     <div class="flex items-center gap-3">
                         <span class="text-xs text-slate-500 font-medium">Zoom</span>
-                        <input type="range" min="0.5" max="1.0" step="0.05" value="0.75" oninput="updateZoom(this.value)" class="w-20 accent-blue-600 cursor-pointer">
+                        <input id="zoomSlider" type="range" min="0.5" max="1.0" step="0.05" value="0.75" oninput="updateZoom(this.value)" class="w-20 accent-blue-600 cursor-pointer">
                         <span id="zoomValue" class="text-xs text-slate-500 font-mono w-8">75%</span>
                     </div>
                 </div>
                 
                 <div class="flex-1 overflow-y-auto bg-slate-300/30 rounded-xl p-4 flex justify-center custom-scroll">
-                    <div id="previewContainer" class="preview-scale" style="transform: scale(0.75);">
+                    <div id="previewContainer" class="preview-scale">
                         <div id="resumePreview" class="resume-page">
                             <!-- Resume content injected here -->
                         </div>
