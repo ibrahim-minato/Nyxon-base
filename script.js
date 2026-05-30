@@ -10,28 +10,8 @@ let skills = [];
 let certifications = [];
 let coverLetter = { company: '', role: '', intro: '', body: '', closing: '' };
 let projects = [];
-let currentZoom = 0.75;
-
-function getResponsiveZoom(width) {
-    if (width < 640) return 0.58;
-    if (width < 900) return 0.66;
-    if (width < 1200) return 0.72;
-    return 0.75;
-}
-
-function applyResponsiveZoom() {
-    const previewContainer = document.getElementById('previewContainer');
-    const zoomSlider = document.getElementById('zoomSlider');
-    const zoomValue = document.getElementById('zoomValue');
-    if (!previewContainer) return;
-
-    currentZoom = getResponsiveZoom(window.innerWidth);
-    previewContainer.style.transform = `scale(${currentZoom})`;
-    previewContainer.style.transformOrigin = 'top center';
-
-    if (zoomSlider) zoomSlider.value = currentZoom;
-    if (zoomValue) zoomValue.textContent = `${Math.round(currentZoom * 100)}%`;
-}
+// Feature flag: control whether users may enable monetization
+const allowMonetization = false;
 
 // ==================== INITIALIZATION ====================
 document.addEventListener('DOMContentLoaded', () => {
@@ -44,10 +24,21 @@ document.addEventListener('DOMContentLoaded', () => {
     setCoverLetterTemplate(currentCoverTemplate);
     setPortfolioTemplate(currentPortfolioTemplate);
     setMode('resume');
-    initAdBanner();
-    applyResponsiveZoom();
+    if (allowMonetization) {
+        initAdBanner();
+    } else {
+        // Replace ad section with informational notice to prevent user monetization
+        const adEl = document.getElementById('adSection');
+        if (adEl) {
+            adEl.innerHTML = `
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200/80">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Monetization</h2>
+                    <p class="text-xs text-slate-600">Ad monetization is disabled for users in this deployment. Ads are managed automatically by the platform.</p>
+                </div>
+            `;
+        }
+    }
     updatePreview();
-    window.addEventListener('resize', applyResponsiveZoom);
 });
 
 const adBanners = [
@@ -91,9 +82,8 @@ function setTheme(theme) {
 }
 
 function updateZoom(value) {
-    currentZoom = Number(value);
-    document.getElementById('previewContainer').style.transform = `scale(${currentZoom})`;
-    document.getElementById('zoomValue').textContent = Math.round(currentZoom * 100) + '%';
+    document.getElementById('previewContainer').style.transform = `scale(${value})`;
+    document.getElementById('zoomValue').textContent = Math.round(value * 100) + '%';
 }
 
 function showAIThinking() {
@@ -126,6 +116,7 @@ function resetAll() {
     document.getElementById('phone').value = '';
     document.getElementById('location').value = '';
     document.getElementById('website').value = '';
+    if (document.getElementById('targetJob')) document.getElementById('targetJob').value = '';
     document.getElementById('summary').value = '';
     experiences = []; educations = []; skills = []; certifications = [];
     coverLetter = { company: '', role: '', intro: '', body: '', closing: '' };
@@ -292,6 +283,20 @@ function updateCoverLetter(field, value) {
     updatePreview();
 }
 
+function selectCoverLetterStyle(template) {
+    if (currentMode !== 'cover') {
+        setMode('cover');
+    }
+    setCoverLetterTemplate(template);
+}
+
+function selectPortfolioStyle(template) {
+    if (currentMode !== 'portfolio') {
+        setMode('portfolio');
+    }
+    setPortfolioTemplate(template);
+}
+
 function setCoverLetterTemplate(template) {
     currentCoverTemplate = template;
     document.querySelectorAll('.cover-template-card').forEach(el => {
@@ -305,7 +310,28 @@ function setCoverLetterTemplate(template) {
     }
     const label = document.getElementById('coverTemplateLabel');
     if (label) {
-        const coverLabels = { formal: 'Formal', modern: 'Modern', creative: 'Creative', minimal: 'Minimal', executive: 'Executive' };
+        const coverLabels = {
+            formal: 'Formal',
+            classic: 'Classic',
+            modern: 'Modern',
+            fresh: 'Fresh',
+            creative: 'Creative',
+            styled: 'Styled',
+            minimal: 'Minimal',
+            clean: 'Clean',
+            executive: 'Executive',
+            polished: 'Polished',
+            bold: 'Bold',
+            elegant: 'Elegant',
+            refined: 'Refined',
+            premium: 'Premium',
+            smart: 'Smart',
+            direct: 'Direct',
+            narrative: 'Narrative',
+            persuasive: 'Persuasive',
+            modern2: 'Modern 2',
+            brief: 'Brief'
+        };
         label.textContent = coverLabels[template] || template;
     }
     showAIThinking();
@@ -325,7 +351,28 @@ function setPortfolioTemplate(template) {
     }
     const label = document.getElementById('portfolioTemplateLabel');
     if (label) {
-        const portfolioLabels = { gallery: 'Gallery', caseStudy: 'Case Study', grid: 'Grid', studio: 'Studio', bold: 'Bold' };
+        const portfolioLabels = {
+            gallery: 'Gallery',
+            caseStudy: 'Case Study',
+            grid: 'Grid',
+            studio: 'Studio',
+            bold: 'Bold',
+            impact: 'Impact',
+            premium: 'Premium',
+            refined: 'Refined',
+            luxe: 'Luxe',
+            sleek: 'Sleek',
+            organized: 'Organized',
+            showcase: 'Showcase',
+            creative: 'Creative',
+            minimalist: 'Minimalist',
+            classic: 'Classic',
+            dynamic: 'Dynamic',
+            polished: 'Polished',
+            brand: 'Brand',
+            interactive: 'Interactive',
+            vivid: 'Vivid'
+        };
         label.textContent = portfolioLabels[template] || template;
     }
     showAIThinking();
@@ -335,12 +382,27 @@ function setPortfolioTemplate(template) {
 function renderCoverLetter(data) {
     const coverRenderers = {
         formal: renderCoverLetterFormal,
+        classic: renderCoverLetterFormal,
         modern: renderCoverLetterModern,
+        fresh: renderCoverLetterModern,
         creative: renderCoverLetterCreative,
+        styled: renderCoverLetterCreative,
         minimal: renderCoverLetterMinimal,
-        executive: renderCoverLetterExecutive
+        clean: renderCoverLetterMinimal,
+        executive: renderCoverLetterExecutive,
+        polished: renderCoverLetterExecutive,
+        bold: renderCoverLetterCreative,
+        elegant: renderCoverLetterFormal,
+        refined: renderCoverLetterMinimal,
+        premium: renderCoverLetterExecutive,
+        smart: renderCoverLetterFormal,
+        direct: renderCoverLetterFormal,
+        narrative: renderCoverLetterModern,
+        persuasive: renderCoverLetterExecutive,
+        modern2: renderCoverLetterModern,
+        brief: renderCoverLetterMinimal
     };
-    return coverRenderers[currentCoverTemplate](data);
+    return (coverRenderers[currentCoverTemplate] || renderCoverLetterFormal)(data);
 }
 
 function renderPortfolioPage(data) {
@@ -349,9 +411,24 @@ function renderPortfolioPage(data) {
         caseStudy: renderPortfolioCaseStudy,
         grid: renderPortfolioGrid,
         studio: renderPortfolioStudio,
-        bold: renderPortfolioBold
+        bold: renderPortfolioBold,
+        impact: renderPortfolioBold,
+        premium: renderPortfolioStudio,
+        refined: renderPortfolioGrid,
+        luxe: renderPortfolioGallery,
+        sleek: renderPortfolioCaseStudy,
+        organized: renderPortfolioGrid,
+        showcase: renderPortfolioStudio,
+        creative: renderPortfolioGallery,
+        minimalist: renderPortfolioGrid,
+        classic: renderPortfolioGallery,
+        dynamic: renderPortfolioCaseStudy,
+        polished: renderPortfolioStudio,
+        brand: renderPortfolioBold,
+        interactive: renderPortfolioCaseStudy,
+        vivid: renderPortfolioGallery
     };
-    return portfolioRenderers[currentPortfolioTemplate](data);
+    return (portfolioRenderers[currentPortfolioTemplate] || renderPortfolioGallery)(data);
 }
 
 function renderCoverLetterFormal(data) {
@@ -499,6 +576,30 @@ function renderPortfolioGallery(data) {
                         <h1 class="text-4xl font-bold">${fullName}</h1>
                         ${data.title ? `<p class="text-slate-300">${data.title}</p>` : ''}
                         ${data.summary ? `<p class="text-slate-400 text-sm leading-relaxed">${data.summary}</p>` : ''}
+
+                        <div class="mt-4 pt-4 border-t border-white/10">
+                            <h3 class="text-xs uppercase tracking-[0.2em] text-slate-300 mb-2">Contact</h3>
+                            ${data.email ? `<p class="text-sm text-slate-200">${data.email}</p>` : ''}
+                            ${data.phone ? `<p class="text-sm text-slate-200">${data.phone}</p>` : ''}
+                            ${data.location ? `<p class="text-sm text-slate-200">${data.location}</p>` : ''}
+                            ${data.website ? `<p class="text-sm text-sky-300">${data.website}</p>` : ''}
+                        </div>
+
+                        ${data.skills && data.skills.length > 0 ? `
+                        <div class="mt-4">
+                            <h3 class="text-xs uppercase tracking-[0.2em] text-slate-300 mb-2">Skills</h3>
+                            <div class="flex flex-wrap gap-2">
+                                ${data.skills.map(skill => `<span class="px-2 py-1 text-xs bg-white/10 rounded-md">${skill}</span>`).join('')}
+                            </div>
+                        </div>` : ''}
+
+                        ${data.certifications && data.certifications.length > 0 ? `
+                        <div class="mt-4">
+                            <h3 class="text-xs uppercase tracking-[0.2em] text-slate-300 mb-2">Certifications</h3>
+                            <div class="space-y-1 text-sm text-slate-200">
+                                ${data.certifications.map(cert => `<div><p class="font-semibold">${cert.name}</p><p class="text-xs text-slate-300">${cert.issuer || ''}${cert.year ? ` · ${cert.year}` : ''}</p></div>`).join('')}
+                            </div>
+                        </div>` : ''}
                     </div>
                     <div class="col-span-8 grid gap-6">
                         ${data.projects.length > 0 ? data.projects.map(project => `
@@ -666,6 +767,7 @@ function getFormData() {
         firstName: document.getElementById('firstName').value,
         lastName: document.getElementById('lastName').value,
         title: document.getElementById('title').value,
+        targetJob: document.getElementById('targetJob') ? document.getElementById('targetJob').value : '',
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value,
         location: document.getElementById('location').value,
@@ -680,6 +782,14 @@ function getFormData() {
     };
 }
 
+function getTargetJobLabel(data) {
+    return data.targetJob ? `<p class="text-sm italic text-slate-500 mt-2">Targeting: ${data.targetJob}</p>` : '';
+}
+
+function highlightSkillClass(skill, data, normalClass, highlightClass) {
+    return (data.targetJob && data.targetJob.toLowerCase().includes(skill.toLowerCase())) ? highlightClass : normalClass;
+}
+
 // ==================== OUTPUT MODE MANAGEMENT ====================
 function setMode(mode) {
     currentMode = mode;
@@ -692,7 +802,34 @@ function setMode(mode) {
         active.classList.remove('bg-slate-50', 'text-slate-700');
         active.classList.add('bg-slate-900', 'text-white');
     }
-    document.getElementById('templateSection').classList.toggle('hidden', mode !== 'resume');
+    // Update header badge to make mode change obvious to users
+    const badge = document.getElementById('currentModeBadge');
+    if (badge) {
+        badge.classList.remove('resume','cv','cover','portfolio');
+        if (mode === 'resume') {
+            badge.textContent = 'Resume · Job-specific';
+            badge.classList.add('resume');
+            badge.title = 'Building a printable resume specific to the target job.';
+        } else if (mode === 'cv') {
+            badge.textContent = 'CV · Broad';
+            badge.classList.add('cv');
+            badge.title = 'Build a broader CV for career or academic applications.';
+        } else if (mode === 'cover') {
+            badge.textContent = 'Cover Letter';
+            badge.classList.add('cover');
+            badge.title = 'Compose a tailored cover letter';
+        } else if (mode === 'portfolio') {
+            badge.textContent = 'Portfolio';
+            badge.classList.add('portfolio');
+            badge.title = 'Create a visual portfolio page';
+        } else {
+            badge.textContent = mode;
+        }
+        // small pulse to draw attention on change
+        badge.style.transform = 'scale(0.98)';
+        setTimeout(() => { badge.style.transform = ''; }, 160);
+    }
+    document.getElementById('templateSection').classList.toggle('hidden', mode !== 'resume' && mode !== 'cv');
     document.getElementById('coverLetterSection').classList.toggle('hidden', mode !== 'cover');
     document.getElementById('coverLetterTemplateSection').classList.toggle('hidden', mode !== 'cover');
     document.getElementById('portfolioSection').classList.toggle('hidden', mode !== 'portfolio');
@@ -719,15 +856,111 @@ function updatePreview() {
         portfolio: renderPortfolio,
         startup: renderStartup,
         corporate: renderCorporate,
-        freelance: renderFreelance
+        freelance: renderFreelance,
+        editorial: renderClassic,
+        premium: renderExecutive,
+        clean: renderMinimal,
+        refined: renderCorporate,
+        studio: renderPortfolio,
+        bold: renderCreative,
+        luxe: renderExecutive,
+        adaptive: renderTechnical
     };
     if (currentMode === 'cover') {
         preview.innerHTML = renderCoverLetter(data);
+    } else if (currentMode === 'cv') {
+        preview.innerHTML = renderCV(data);
     } else if (currentMode === 'portfolio') {
         preview.innerHTML = renderPortfolioPage(data);
     } else {
         preview.innerHTML = renderers[currentTemplate](data);
     }
+}
+
+function renderCV(data) {
+    const fullName = `${data.firstName} ${data.lastName}`.trim() || 'Your Name';
+    const cvStyles = {
+        modern: { name: 'Modern', headingText: 'text-slate-900', accentText: 'text-slate-500', line: 'bg-slate-900' },
+        classic: { name: 'Classic', headingText: 'text-slate-900', accentText: 'text-slate-500', line: 'bg-slate-800' },
+        minimal: { name: 'Minimal', headingText: 'text-slate-900', accentText: 'text-slate-400', line: 'bg-slate-400' },
+        executive: { name: 'Executive', headingText: 'text-slate-900', accentText: 'text-amber-500', line: 'bg-amber-500' },
+        creative: { name: 'Creative', headingText: 'text-slate-900', accentText: 'text-rose-500', line: 'bg-rose-500' },
+        technical: { name: 'Technical', headingText: 'text-slate-900', accentText: 'text-emerald-500', line: 'bg-emerald-500' },
+        academic: { name: 'Academic', headingText: 'text-slate-900', accentText: 'text-amber-500', line: 'bg-amber-500' },
+        ats: { name: 'ATS', headingText: 'text-slate-900', accentText: 'text-green-600', line: 'bg-green-600' },
+        portfolio: { name: 'Portfolio', headingText: 'text-slate-900', accentText: 'text-sky-500', line: 'bg-sky-500' },
+        startup: { name: 'Startup', headingText: 'text-slate-900', accentText: 'text-cyan-500', line: 'bg-cyan-500' },
+        corporate: { name: 'Corporate', headingText: 'text-slate-900', accentText: 'text-orange-500', line: 'bg-orange-500' },
+        freelance: { name: 'Freelance', headingText: 'text-slate-900', accentText: 'text-amber-500', line: 'bg-amber-500' },
+        editorial: { name: 'Editorial', headingText: 'text-slate-900', accentText: 'text-violet-500', line: 'bg-violet-500' },
+        premium: { name: 'Premium', headingText: 'text-slate-900', accentText: 'text-amber-500', line: 'bg-amber-500' },
+        clean: { name: 'Clean', headingText: 'text-slate-900', accentText: 'text-slate-400', line: 'bg-slate-400' },
+        refined: { name: 'Refined', headingText: 'text-slate-900', accentText: 'text-blue-500', line: 'bg-blue-500' },
+        studio: { name: 'Studio', headingText: 'text-slate-900', accentText: 'text-fuchsia-500', line: 'bg-fuchsia-500' },
+        bold: { name: 'Bold', headingText: 'text-slate-900', accentText: 'text-red-500', line: 'bg-red-500' },
+        luxe: { name: 'Luxe', headingText: 'text-slate-900', accentText: 'text-amber-500', line: 'bg-amber-500' },
+        adaptive: { name: 'Adaptive', headingText: 'text-slate-900', accentText: 'text-cyan-500', line: 'bg-cyan-500' }
+    };
+    const config = cvStyles[currentTemplate] || cvStyles.modern;
+    return `
+        <div class="min-h-[297mm] bg-white p-12 font-source">
+            <div class="max-w-5xl mx-auto">
+                <div class="mb-10">
+                    <div class="h-1 ${config.line} rounded-full mb-4"></div>
+                    <h1 class="text-5xl font-bold tracking-tight ${config.headingText}">${fullName}</h1>
+                    ${data.title ? `<p class="text-lg ${config.accentText} mt-3">${data.title}</p>` : ''}
+                    <p class="text-sm ${config.accentText} mt-1">Template: ${config.name}</p>
+                    ${getTargetJobLabel(data)}
+                    <div class="mt-5 text-sm ${config.accentText} space-y-2">
+                        ${data.email ? `<p>Email: ${data.email}</p>` : ''}
+                        ${data.phone ? `<p>Phone: ${data.phone}</p>` : ''}
+                        ${data.location ? `<p>Location: ${data.location}</p>` : ''}
+                        ${data.website ? `<p>Website: ${data.website}</p>` : ''}
+                    </div>
+                </div>
+                ${data.summary ? `<div class="mb-10"><h2 class="text-xs uppercase tracking-[0.28em] text-slate-500 mb-3">Professional Profile</h2><p class="text-slate-700 leading-relaxed">${data.summary}</p></div>` : ''}
+                <div class="space-y-12">
+                    <section class="space-y-4">
+                        <h2 class="text-xs uppercase tracking-[0.28em] text-slate-500">Experience</h2>
+                        ${data.experiences.length > 0 ? data.experiences.map(exp => `
+                            <div class="rounded-2xl p-6 bg-slate-50 border border-slate-200">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                    <div>
+                                        <p class="text-base font-semibold text-slate-900">${exp.position || 'Job Title'}</p>
+                                        <p class="text-sm text-slate-600">${exp.company || 'Company Name'}</p>
+                                    </div>
+                                    <p class="text-sm text-slate-500">${exp.startDate || ''}${exp.startDate && exp.endDate ? ' — ' : ''}${exp.endDate || ''}</p>
+                                </div>
+                                ${exp.description ? `<p class="mt-4 text-sm leading-7 text-slate-700">${exp.description}</p>` : ''}
+                            </div>
+                        `).join('') : '<p class="text-slate-600">Add work history here to fill out your CV.</p>'}
+                    </section>
+                    <section class="grid gap-8 lg:grid-cols-2">
+                        <div class="space-y-4">
+                            <h2 class="text-xs uppercase tracking-[0.28em] text-slate-500">Education</h2>
+                            ${data.educations.length > 0 ? data.educations.map(edu => `
+                                <div class="rounded-2xl p-6 bg-slate-50 border border-slate-200">
+                                    <p class="text-base font-semibold text-slate-900">${edu.school || 'School / University'}</p>
+                                    <p class="text-sm text-slate-600">${edu.degree || ''}${edu.degree && edu.field ? ', ' : ''}${edu.field || ''}</p>
+                                    ${edu.year ? `<p class="text-sm text-slate-500 mt-2">${edu.year}</p>` : ''}
+                                </div>
+                            `).join('') : '<p class="text-slate-600">Add your education history to complete your CV.</p>'}
+                        </div>
+                        <div class="space-y-6">
+                            <div class="rounded-2xl p-6 bg-slate-50 border border-slate-200">
+                                <h2 class="text-xs uppercase tracking-[0.28em] text-slate-500 mb-4">Skills</h2>
+                                ${data.skills.length > 0 ? `<div class="flex flex-wrap gap-2">${data.skills.map(skill => `<span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-semibold ${highlightSkillClass(skill, data, 'bg-slate-200 text-slate-700', 'bg-slate-900 text-white')}">${skill}</span>`).join('')}</div>` : '<p class="text-slate-600">Add your key skills here.</p>'}
+                            </div>
+                            <div class="rounded-2xl p-6 bg-slate-50 border border-slate-200">
+                                <h2 class="text-xs uppercase tracking-[0.28em] text-slate-500 mb-4">Certifications</h2>
+                                ${data.certifications.length > 0 ? `<div class="space-y-3">${data.certifications.map(cert => `<div><p class="text-sm font-semibold text-slate-900">${cert.name || 'Certification'}</p><p class="text-sm text-slate-600">${cert.issuer || ''}${cert.year ? ` · ${cert.year}` : ''}</p></div>`).join('')}</div>` : '<p class="text-slate-600">Add certificates that support your CV.</p>'}
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    `;
 }
 
 // ---------- MODERN TEMPLATE ----------
@@ -742,6 +975,7 @@ function renderModern(data) {
                 <div class="mb-8">
                     <h1 class="text-[28px] font-bold leading-tight mb-1 tracking-tight">${fullName}</h1>
                     ${data.title ? `<p class="text-blue-400 font-semibold text-xs uppercase tracking-[0.2em] mt-2">${data.title}</p>` : ''}
+                    ${getTargetJobLabel(data)}
                 </div>
                 ${hasContact ? `
                 <div class="mb-8 space-y-3">
@@ -755,7 +989,7 @@ function renderModern(data) {
                 <div class="mb-8">
                     <h3 class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 mb-4">Skills</h3>
                     <div class="flex flex-wrap gap-2">
-                        ${data.skills.map(skill => `<span class="px-3 py-1.5 bg-slate-800 text-blue-300 text-[11px] rounded-full border border-slate-700 font-medium">${skill}</span>`).join('')}
+                        ${data.skills.map(skill => `<span class="px-3 py-1.5 ${highlightSkillClass(skill, data, 'bg-slate-800 text-blue-300', 'bg-amber-400 text-slate-900')} text-[11px] rounded-full border border-slate-700 font-medium">${skill}</span>`).join('')}
                     </div>
                 </div>` : ''}
                 ${data.educations.length > 0 ? `
@@ -828,6 +1062,7 @@ function renderClassic(data) {
             <div class="text-center border-b-2 border-slate-900 pb-6 mb-8">
                 <h1 class="text-[42px] font-playfair font-bold text-slate-900 mb-2 tracking-tight">${fullName}</h1>
                 ${data.title ? `<p class="text-lg text-slate-600 font-playfair italic mb-4">${data.title}</p>` : ''}
+                ${getTargetJobLabel(data)}
                 ${hasContact ? `
                 <div class="flex justify-center items-center gap-3 text-sm text-slate-600 flex-wrap">
                     ${data.email ? `<span>${data.email}</span>` : ''}
@@ -885,7 +1120,7 @@ function renderClassic(data) {
             <div>
                 <h2 class="text-xs font-bold uppercase tracking-[0.2em] text-slate-900 border-b border-slate-300 pb-1.5 mb-4">Skills</h2>
                 <div class="flex flex-wrap gap-x-3 gap-y-1">
-                    ${data.skills.map((skill, i) => `<span class="text-sm text-slate-700">${skill}${i < data.skills.length - 1 ? ',' : ''}</span>`).join('')}
+                    ${data.skills.map((skill, i) => `<span class="text-sm ${highlightSkillClass(skill, data, 'text-slate-700', 'text-slate-900 font-semibold')}">${skill}${i < data.skills.length - 1 ? ',' : ''}</span>`).join('')}
                 </div>
             </div>` : ''}
         </div>
@@ -901,6 +1136,7 @@ function renderMinimal(data) {
             <div class="mb-12">
                 <h1 class="text-5xl font-light text-slate-900 mb-3 tracking-tight">${fullName}</h1>
                 ${data.title ? `<p class="text-xl text-slate-400 font-light">${data.title}</p>` : ''}
+                ${getTargetJobLabel(data)}
                 <div class="mt-5 flex gap-4 text-sm text-slate-400 flex-wrap">
                     ${data.email ? `<span>${data.email}</span>` : ''}
                     ${data.phone ? `<span>· ${data.phone}</span>` : ''}
@@ -960,7 +1196,7 @@ function renderMinimal(data) {
             <div>
                 <h2 class="text-[10px] font-bold uppercase tracking-[0.25em] text-slate-400 mb-4">Skills</h2>
                 <div class="flex flex-wrap gap-2">
-                    ${data.skills.map(skill => `<span class="px-3 py-1 bg-slate-100 text-slate-600 text-sm rounded-md">${skill}</span>`).join('')}
+                    ${data.skills.map(skill => `<span class="px-3 py-1 rounded-md text-sm ${highlightSkillClass(skill, data, 'bg-slate-100 text-slate-600', 'bg-slate-900 text-white')}">${skill}</span>`).join('')}
                 </div>
             </div>` : ''}
         </div>
@@ -1084,6 +1320,7 @@ function renderCreative(data) {
                             <p class="text-[10px] uppercase tracking-[0.35em] text-blue-300 mb-4">Creative Resume</p>
                             <h1 class="text-[42px] font-bold leading-tight tracking-tight">${fullName}</h1>
                             ${data.title ? `<p class="mt-4 text-lg text-slate-300 font-medium">${data.title}</p>` : ''}
+                            ${getTargetJobLabel(data)}
                         </div>
                         ${hasContact ? `
                         <div class="space-y-3 text-sm text-slate-300">
@@ -1096,7 +1333,7 @@ function renderCreative(data) {
                         <div class="mt-10">
                             <h2 class="text-[11px] uppercase tracking-[0.35em] text-blue-300 mb-4">Skills</h2>
                             <div class="grid grid-cols-2 gap-2">
-                                ${data.skills.map(skill => `<span class="inline-flex items-center px-3 py-2 bg-blue-500/10 text-blue-900 rounded-full text-[12px]">${skill}</span>`).join('')}
+                                ${data.skills.map(skill => `<span class="inline-flex items-center px-3 py-2 rounded-full text-[12px] ${highlightSkillClass(skill, data, 'bg-blue-500/10 text-blue-900', 'bg-slate-100 text-slate-950 font-semibold')}">${skill}</span>`).join('')}
                             </div>
                         </div>` : ''}
                     </div>
@@ -1164,6 +1401,7 @@ function renderTechnical(data) {
                     <div>
                         <h1 class="text-4xl font-bold tracking-tight">${fullName}</h1>
                         ${data.title ? `<p class="mt-3 text-slate-300 text-sm">${data.title}</p>` : ''}
+                    ${getTargetJobLabel(data)}
                     </div>
                     ${data.summary ? `<div><h2 class="text-xs uppercase tracking-[0.35em] text-slate-400 mb-3">Profile</h2><p class="text-sm text-slate-300 leading-relaxed">${data.summary}</p></div>` : ''}
                     <div>
@@ -1175,7 +1413,7 @@ function renderTechnical(data) {
                             ${data.website ? `<p>${data.website}</p>` : ''}
                         </div>
                     </div>
-                    ${data.skills.length > 0 ? `<div><h2 class="text-xs uppercase tracking-[0.35em] text-slate-400 mb-3">Skills</h2><div class="grid gap-2">${data.skills.map(skill => `<span class="inline-flex px-3 py-2 bg-slate-800/90 rounded-full text-[12px]">${skill}</span>`).join('')}</div></div>` : ''}
+                    ${data.skills.length > 0 ? `<div><h2 class="text-xs uppercase tracking-[0.35em] text-slate-400 mb-3">Skills</h2><div class="grid gap-2">${data.skills.map(skill => `<span class="inline-flex px-3 py-2 rounded-full text-[12px] ${highlightSkillClass(skill, data, 'bg-slate-800/90 text-slate-100', 'bg-cyan-400 text-slate-950 font-semibold')}">${skill}</span>`).join('')}</div></div>` : ''}
                 </div>
                 <div class="col-span-8 space-y-8">
                     ${data.experiences.length > 0 ? `<div class="bg-slate-50 rounded-[30px] p-8 shadow-sm ring-1 ring-slate-200/80"><h2 class="text-sm uppercase tracking-[0.35em] text-slate-500 mb-6">Experience</h2><div class="space-y-6">${data.experiences.map(exp => `<div><div class="flex items-center justify-between gap-4"><div><h3 class="font-semibold text-slate-900">${exp.position || 'Position'}</h3><p class="text-sm text-slate-600">${exp.company || 'Company'}</p></div><span class="text-xs uppercase tracking-[0.35em] text-slate-400">${exp.startDate || ''}${exp.startDate && exp.endDate ? ' – ' : ''}${exp.endDate || ''}</span></div>${exp.description ? `<p class="text-sm text-slate-600 mt-3 leading-relaxed">${exp.description}</p>` : ''}</div>`).join('')}</div></div>` : ''}
@@ -1194,6 +1432,7 @@ function renderAcademic(data) {
             <div class="text-center mb-12">
                 <h1 class="text-5xl font-bold text-slate-900 mb-2">${fullName}</h1>
                 ${data.title ? `<p class="text-xl text-slate-600">${data.title}</p>` : ''}
+                ${getTargetJobLabel(data)}
                 <div class="mt-4 text-sm text-slate-500">${data.email || ''}${data.email && data.phone ? ' | ' : ''}${data.phone || ''}${(data.email || data.phone) && data.website ? ' | ' : ''}${data.website || ''}</div>
             </div>
             ${data.summary ? `<div class="mb-12"><h2 class="text-xs uppercase tracking-[0.3em] text-slate-400 mb-3">Research Summary</h2><p class="text-slate-700 leading-relaxed">${data.summary}</p></div>` : ''}
@@ -1215,7 +1454,7 @@ function renderATS(data) {
                 <div class="text-sm text-slate-600 leading-relaxed">${data.email || ''}${data.email && data.phone ? ' | ' : ''}${data.phone || ''}${(data.email || data.phone) && data.location ? ' | ' : ''}${data.location || ''}${(data.email || data.phone || data.location) && data.website ? ' | ' : ''}${data.website || ''}</div>
             </div>
             ${data.summary ? `<div class="mb-8"><h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-700 mb-3">Summary</h2><p class="text-sm text-slate-700 leading-relaxed">${data.summary}</p></div>` : ''}
-            ${data.skills.length > 0 ? `<div class="mb-8"><h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-700 mb-3">Skills</h2><div class="grid grid-cols-2 gap-2 text-sm text-slate-700">${data.skills.map(skill => `<span>• ${skill}</span>`).join('')}</div></div>` : ''}
+            ${data.skills.length > 0 ? `<div class="mb-8"><h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-700 mb-3">Skills</h2><div class="grid grid-cols-2 gap-2 text-sm text-slate-700">${data.skills.map(skill => `<span class="${highlightSkillClass(skill, data, 'text-slate-700', 'font-semibold text-slate-900')}">• ${skill}</span>`).join('')}</div></div>` : ''}
             ${data.experiences.length > 0 ? `<div class="mb-8"><h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-700 mb-3">Work Experience</h2><div class="space-y-5">${data.experiences.map(exp => `<div><p class="font-semibold text-slate-900">${exp.position || 'Position'}</p><p class="text-sm text-slate-700">${exp.company || 'Company'}${exp.startDate || exp.endDate ? ` | ${exp.startDate || ''}${exp.startDate && exp.endDate ? ' – ' : ''}${exp.endDate || ''}` : ''}</p>${exp.description ? `<p class="text-sm text-slate-700 mt-2">${exp.description}</p>` : ''}</div>`).join('')}</div></div>` : ''}
             ${data.educations.length > 0 ? `<div class="mb-8"><h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-700 mb-3">Education</h2><div class="space-y-4">${data.educations.map(edu => `<div><p class="font-semibold text-slate-900">${edu.school || 'School'}</p><p class="text-sm text-slate-700">${edu.degree || ''}${edu.degree && edu.field ? `, ${edu.field}` : ''}${edu.year ? ` | ${edu.year}` : ''}</p></div>`).join('')}</div></div>` : ''}
             ${data.certifications.length > 0 ? `<div class="mb-8"><h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-700 mb-3">Certifications</h2><div class="space-y-2">${data.certifications.map(cert => `<p class="text-sm text-slate-700">${cert.name}${cert.issuer ? `, ${cert.issuer}` : ''}${cert.year ? ` (${cert.year})` : ''}</p>`).join('')}</div></div>` : ''}
@@ -1235,6 +1474,7 @@ function renderPortfolio(data) {
                         <p class="text-xs uppercase tracking-[0.3em] text-sky-300 mb-3">Portfolio</p>
                         <h1 class="text-4xl font-bold leading-tight">${fullName}</h1>
                         ${data.title ? `<p class="mt-4 text-slate-300 text-sm">${data.title}</p>` : ''}
+                        ${getTargetJobLabel(data)}
                     </div>
                     ${hasContact ? `
                     <div class="space-y-2 text-sm text-slate-300">
@@ -1247,7 +1487,7 @@ function renderPortfolio(data) {
                     <div>
                         <h2 class="text-xs uppercase tracking-[0.3em] text-sky-300 mb-3">Skills</h2>
                         <div class="flex flex-wrap gap-2">
-                            ${data.skills.map(skill => `<span class="px-3 py-2 bg-slate-800 text-slate-100 rounded-full text-xs">${skill}</span>`).join('')}
+                            ${data.skills.map(skill => `<span class="px-3 py-2 rounded-full text-xs ${highlightSkillClass(skill, data, 'bg-slate-800 text-slate-100', 'bg-sky-200 text-slate-950 font-semibold')}">${skill}</span>`).join('')}
                         </div>
                     </div>` : ''}
                 </div>
@@ -1274,6 +1514,7 @@ function renderStartup(data) {
                     <p class="text-xs uppercase tracking-[0.35em] text-cyan-200 mb-4">Startup Resume</p>
                     <h1 class="text-5xl font-bold tracking-tight">${fullName}</h1>
                     ${data.title ? `<p class="mt-4 text-lg text-cyan-100">${data.title}</p>` : ''}
+                    ${getTargetJobLabel(data)}
                     ${data.summary ? `<p class="mt-6 max-w-3xl text-slate-100 leading-relaxed">${data.summary}</p>` : ''}
                 </div>
             </div>
@@ -1283,7 +1524,7 @@ function renderStartup(data) {
                     ${data.educations.length > 0 ? `<div class="bg-slate-50 rounded-[32px] p-8 shadow-sm ring-1 ring-slate-200/80"><h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-700 mb-5">Education</h2><div class="space-y-4">${data.educations.map(edu => `<div><p class="font-semibold text-slate-900">${edu.degree || 'Degree'}${edu.field ? `, ${edu.field}` : ''}</p><p class="text-slate-600 text-sm">${edu.school || 'School'}${edu.year ? ` · ${edu.year}` : ''}</p></div>`).join('')}</div></div>` : ''}
                 </div>
                 <div class="col-span-4 space-y-8">
-                    ${data.skills.length > 0 ? `<div class="bg-slate-950 text-white rounded-[32px] p-8 shadow-lg"><h2 class="text-xs uppercase tracking-[0.35em] text-cyan-300 mb-4">Skills</h2><div class="flex flex-wrap gap-2">${data.skills.map(skill => `<span class="inline-flex items-center px-3 py-2 bg-white/10 rounded-full text-xs">${skill}</span>`).join('')}</div></div>` : ''}
+                    ${data.skills.length > 0 ? `<div class="bg-slate-950 text-white rounded-[32px] p-8 shadow-lg"><h2 class="text-xs uppercase tracking-[0.35em] text-cyan-300 mb-4">Skills</h2><div class="flex flex-wrap gap-2">${data.skills.map(skill => `<span class="inline-flex items-center px-3 py-2 rounded-full text-xs ${highlightSkillClass(skill, data, 'bg-white/10 text-white', 'bg-cyan-300 text-slate-950 font-semibold')}">${skill}</span>`).join('')}</div></div>` : ''}
                     ${data.certifications.length > 0 ? `<div class="bg-slate-950 text-white rounded-[32px] p-8 shadow-lg"><h2 class="text-xs uppercase tracking-[0.35em] text-cyan-300 mb-4">Certifications</h2><div class="space-y-3">${data.certifications.map(cert => `<div><p class="font-semibold">${cert.name}</p><p class="text-xs text-slate-300">${cert.issuer || ''}${cert.issuer && cert.year ? ` · ${cert.year}` : cert.year || ''}</p></div>`).join('')}</div></div>` : ''}
                     ${data.email || data.phone || data.location || data.website ? `<div class="bg-slate-50 rounded-[32px] p-8 shadow-sm ring-1 ring-slate-200/80"><h2 class="text-sm font-bold uppercase tracking-[0.2em] text-slate-700 mb-4">Contact</h2>${data.email ? `<p class="text-slate-700 text-sm">${data.email}</p>` : ''}${data.phone ? `<p class="text-slate-700 text-sm">${data.phone}</p>` : ''}${data.location ? `<p class="text-slate-700 text-sm">${data.location}</p>` : ''}${data.website ? `<p class="text-slate-700 text-sm">${data.website}</p>` : ''}</div>` : ''}
                 </div>
@@ -1302,6 +1543,7 @@ function renderCorporate(data) {
                         <p class="text-xs uppercase tracking-[0.3em] text-slate-500 mb-3">Corporate</p>
                         <h1 class="text-4xl font-bold text-slate-900">${fullName}</h1>
                         ${data.title ? `<p class="mt-3 text-slate-600 text-lg">${data.title}</p>` : ''}
+                        ${getTargetJobLabel(data)}
                     </div>
                     <div class="space-y-2 text-sm text-slate-700">
                         ${data.email ? `<p>Email: ${data.email}</p>` : ''}
@@ -1309,7 +1551,7 @@ function renderCorporate(data) {
                         ${data.location ? `<p>Location: ${data.location}</p>` : ''}
                         ${data.website ? `<p>Website: ${data.website}</p>` : ''}
                     </div>
-                    ${data.skills.length > 0 ? `<div><h2 class="text-xs uppercase tracking-[0.3em] text-slate-500 mb-3">Core Skills</h2><div class="flex flex-wrap gap-2">${data.skills.map(skill => `<span class="px-3 py-2 bg-slate-200 text-slate-800 rounded-full text-xs">${skill}</span>`).join('')}</div></div>` : ''}
+                    ${data.skills.length > 0 ? `<div><h2 class="text-xs uppercase tracking-[0.3em] text-slate-500 mb-3">Core Skills</h2><div class="flex flex-wrap gap-2">${data.skills.map(skill => `<span class="px-3 py-2 rounded-full text-xs ${highlightSkillClass(skill, data, 'bg-slate-200 text-slate-800', 'bg-slate-900 text-white font-semibold')}">${skill}</span>`).join('')}</div></div>` : ''}
                 </div>
                 <div class="col-span-8 space-y-8">
                     ${data.summary ? `<div class="bg-slate-50 rounded-[32px] p-8 shadow-sm ring-1 ring-slate-200/80"><h2 class="text-sm uppercase tracking-[0.2em] text-slate-700 mb-4">Executive Summary</h2><p class="text-slate-700 leading-relaxed">${data.summary}</p></div>` : ''}
@@ -1331,6 +1573,7 @@ function renderFreelance(data) {
                     <p class="text-xs uppercase tracking-[0.35em] text-amber-100 mb-4">Freelance Profile</p>
                     <h1 class="text-5xl font-bold tracking-tight">${fullName}</h1>
                     ${data.title ? `<p class="mt-4 text-lg text-amber-100">${data.title}</p>` : ''}
+                    ${getTargetJobLabel(data)}
                     ${data.summary ? `<p class="mt-6 max-w-3xl text-orange-100 leading-relaxed">${data.summary}</p>` : ''}
                 </div>
             </div>
@@ -1340,80 +1583,9 @@ function renderFreelance(data) {
                     ${data.educations.length > 0 ? `<div class="bg-white rounded-[32px] p-8 shadow-sm ring-1 ring-slate-200/80"><h2 class="text-sm uppercase tracking-[0.2em] text-slate-700 mb-5">Education</h2><div class="space-y-4">${data.educations.map(edu => `<div><p class="font-semibold text-slate-900">${edu.degree || 'Degree'}${edu.field ? `, ${edu.field}` : ''}</p><p class="text-sm text-slate-600">${edu.school || 'School'}${edu.year ? ` · ${edu.year}` : ''}</p></div>`).join('')}</div></div>` : ''}
                 </div>
                 <div class="col-span-5 space-y-8">
-                    ${data.skills.length > 0 ? `<div class="bg-orange-50 rounded-[32px] p-8 shadow-lg"><h2 class="text-xs uppercase tracking-[0.35em] text-orange-600 mb-4">Skills</h2><div class="flex flex-wrap gap-2">${data.skills.map(skill => `<span class="inline-flex items-center px-3 py-2 bg-white rounded-full text-xs text-slate-900">${skill}</span>`).join('')}</div></div>` : ''}
+                    ${data.skills.length > 0 ? `<div class="bg-orange-50 rounded-[32px] p-8 shadow-lg"><h2 class="text-xs uppercase tracking-[0.35em] text-orange-600 mb-4">Skills</h2><div class="flex flex-wrap gap-2">${data.skills.map(skill => `<span class="inline-flex items-center px-3 py-2 rounded-full text-xs ${highlightSkillClass(skill, data, 'bg-white text-slate-900', 'bg-orange-500 text-white font-semibold')}">${skill}</span>`).join('')}</div></div>` : ''}
                     ${data.certifications.length > 0 ? `<div class="bg-orange-50 rounded-[32px] p-8 shadow-lg"><h2 class="text-xs uppercase tracking-[0.35em] text-orange-600 mb-4">Certifications</h2><div class="space-y-3">${data.certifications.map(cert => `<div><p class="font-semibold">${cert.name}</p><p class="text-sm text-slate-700">${cert.issuer || ''}${cert.issuer && cert.year ? ` · ${cert.year}` : cert.year || ''}</p></div>`).join('')}</div></div>` : ''}
                     ${data.email || data.phone || data.location || data.website ? `<div class="bg-slate-50 rounded-[32px] p-8 shadow-sm ring-1 ring-slate-200/80"><h2 class="text-sm uppercase tracking-[0.2em] text-slate-700 mb-4">Contact</h2>${data.email ? `<p class="text-slate-700 text-sm">${data.email}</p>` : ''}${data.phone ? `<p class="text-slate-700 text-sm">${data.phone}</p>` : ''}${data.location ? `<p class="text-slate-700 text-sm">${data.location}</p>` : ''}${data.website ? `<p class="text-slate-700 text-sm">${data.website}</p>` : ''}</div>` : ''}
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// Duplicate renderCoverLetter and renderPortfolioPage definitions are preserved from the original app.
-function renderCoverLetter(data) {
-    const fullName = `${data.firstName} ${data.lastName}`.trim() || 'Your Name';
-    return `
-        <div class="min-h-[297mm] bg-white p-12 font-source">
-            <div class="max-w-3xl mx-auto">
-                <div class="mb-6 text-sm text-slate-500">
-                    <p>${fullName}</p>
-                    ${data.email ? `<p>${data.email}</p>` : ''}
-                    ${data.phone ? `<p>${data.phone}</p>` : ''}
-                    ${data.website ? `<p>${data.website}</p>` : ''}
-                    ${data.location ? `<p>${data.location}</p>` : ''}
-                </div>
-                <div class="mb-6 text-sm text-slate-700">
-                    ${data.coverLetter.company ? `<p>Hiring Team — ${data.coverLetter.company}</p>` : '<p>Hiring Team</p>'}
-                    ${data.coverLetter.role ? `<p>${data.coverLetter.role}</p>` : ''}
-                </div>
-                <div class="space-y-6 text-sm leading-relaxed text-slate-700">
-                    ${data.coverLetter.intro ? `<p>${data.coverLetter.intro}</p>` : `<p>I am writing to express my interest in the open position at your company.</p>`}
-                    ${data.coverLetter.body ? `<p>${data.coverLetter.body}</p>` : `<p>With a strong background in product design and a passion for user-centered work, I am confident I can add value to your team.</p>`}
-                    ${data.coverLetter.closing ? `<p>${data.coverLetter.closing}</p>` : `<p>Thank you for your time and consideration. I look forward to connecting.</p>`}
-                </div>
-                <div class="mt-12 text-sm text-slate-900 font-semibold">
-                    <p>Sincerely,</p>
-                    <p class="mt-4">${fullName}</p>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-function renderPortfolioPage(data) {
-    const fullName = `${data.firstName} ${data.lastName}`.trim() || 'Your Name';
-    return `
-        <div class="min-h-[297mm] bg-white p-10">
-            <div class="max-w-6xl mx-auto">
-                <div class="mb-10 grid grid-cols-12 gap-8">
-                    <div class="col-span-4 bg-slate-950 text-white rounded-[32px] p-8 space-y-6">
-                        <h1 class="text-4xl font-bold">${fullName}</h1>
-                        ${data.title ? `<p class="text-slate-300">${data.title}</p>` : ''}
-                        ${data.summary ? `<p class="text-slate-400 text-sm leading-relaxed">${data.summary}</p>` : ''}
-                        <div class="space-y-2 text-sm text-slate-300">
-                            ${data.email ? `<p>Email: ${data.email}</p>` : ''}
-                            ${data.phone ? `<p>Phone: ${data.phone}</p>` : ''}
-                            ${data.location ? `<p>Location: ${data.location}</p>` : ''}
-                            ${data.website ? `<p>Website: ${data.website}</p>` : ''}
-                        </div>
-                        ${data.skills.length > 0 ? `<div><h2 class="text-xs uppercase tracking-[0.3em] text-sky-300 mb-3">Skills</h2><div class="flex flex-wrap gap-2">${data.skills.map(skill => `<span class="px-3 py-2 bg-slate-800 rounded-full text-xs text-slate-100">${skill}</span>`).join('')}</div></div>` : ''}
-                    </div>
-                    <div class="col-span-8">
-                        <div class="grid gap-6">
-                            ${data.projects.length > 0 ? data.projects.map(project => `
-                                <div class="bg-slate-50 rounded-[32px] p-8 shadow-sm ring-1 ring-slate-200/80">
-                                    <div class="flex items-start justify-between gap-4 mb-3">
-                                        <div>
-                                            <h2 class="text-xl font-semibold text-slate-900">${project.name || 'Project Name'}</h2>
-                                            <p class="text-sm text-slate-600">${project.role || 'Role'}${project.year ? ` · ${project.year}` : ''}</p>
-                                        </div>
-                                        ${project.link ? `<a href="${project.link.startsWith('http') ? project.link : 'https://' + project.link}" target="_blank" class="text-xs uppercase tracking-[0.25em] text-sky-600 font-bold">View</a>` : ''}
-                                    </div>
-                                    <p class="text-slate-700 leading-relaxed">${project.description || 'Describe the project, impact, and your contribution.'}</p>
-                                </div>
-                            `).join('') : `<div class="bg-slate-50 rounded-[32px] p-8 shadow-sm ring-1 ring-slate-200/80"><p class="text-slate-600">Add your portfolio projects to showcase your work.</p></div>`}
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -1441,6 +1613,7 @@ function loadDemoData() {
     document.getElementById('phone').value = '+1 555 123 4567';
     document.getElementById('location').value = 'Austin, TX';
     document.getElementById('website').value = 'ava.design';
+    if (document.getElementById('targetJob')) document.getElementById('targetJob').value = 'Senior Product Designer at Nova Labs';
     document.getElementById('summary').value = 'Creative product designer with 8 years of experience bringing digital experiences to life for startups and enterprise teams.';
     experiences = [
         { id: Date.now() + 1, company: 'Nova Labs', position: 'Senior Product Designer', startDate: 'Jan 2022', endDate: 'Present', description: 'Led design strategy for customer-facing SaaS products and mentored a team of designers to streamline workflows.' },
